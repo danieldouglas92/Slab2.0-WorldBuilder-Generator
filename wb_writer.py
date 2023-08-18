@@ -157,7 +157,7 @@ def trench_splitter(trench_x, trench_y, x_bounds, y_bounds, trench_orienation):
 ################ Functions which write strings for various temperature features to the world builder file ################
 ##########################################################################################################################
 
-def cooling_model(model_name, max_depth, min_depth, bottom_temp, top_temp, spr_vel, ridge_coords, first_last):
+def cooling_model(model_name, max_depth, min_depth, bottom_temp, top_temp, spr_vel, ridge_coords, first_or_last):
 
     '''
     Defines the geotherm in an oceanic plate as the half-space cooling or plate cooling model
@@ -169,11 +169,11 @@ def cooling_model(model_name, max_depth, min_depth, bottom_temp, top_temp, spr_v
     top_temp      = the temperature at the minimum depth
     spreading_vel = the velocity of the plate
     ridge_coords  = the coordinates specifying the axis of the spreading ridge
-    first_last    = whether this feature is the first or last temperature feature. 'first' is the first feature, 'last' is the last feature, 'both'
+    first_or_last = whether this feature is the first or last temperature feature. 'first' is the first feature, 'last' is the last feature, 'both'
                     is if this is the only feature (i.e. the 'first' and the 'last')
     '''
 
-    if first_last == 'first' or first_last == 'both':
+    if first_or_last == 'first' or first_or_last == 'both':
         string = '"temperature models":['
     else:
         string = ''
@@ -182,7 +182,7 @@ def cooling_model(model_name, max_depth, min_depth, bottom_temp, top_temp, spr_v
         string += '{"model":"' + str(model_name) + '", "max depth":' + str(max_depth) + ', "min depth":' + str(min_depth) + ', "top temperature":' + \
                   str(top_temp) + ', "bottom temperature":' + str(bottom_temp) + ', "spreading velocity":' + str(spr_vel) + ', "ridge coordinates":' + \
                   str(ridge_coords) + '}'
-    if first_last == 'last' or first_last == 'both':
+    if first_or_last == 'last' or first_or_last == 'both':
         string += '], \n'
     else:
         string += ',\n'
@@ -190,25 +190,25 @@ def cooling_model(model_name, max_depth, min_depth, bottom_temp, top_temp, spr_v
 
 
 
-def linear_model(model_name, max_depth, min_depth, bottom_temp, top_temp, first_last):
+def linear_model(model_name, max_depth, min_depth, bottom_temp, top_temp, first_or_last):
     
     '''
     Defines the temperature in a continental plate as a linear conductive geotherm
 
-    model_name  = 'linear'
-    max_depth   = the maximum depth to which this temperature feature will be used
-    min_depth   = the minimum depth to which this temperature feature will be used
-    bottom_temp = the temperature the maximum depth
-    top_temp    = the temperature at the minimum depth
-    first_last  = whether this feature is the first or last temperature feature. 'first' is the first feature, 'last' is the last feature, 'both'
-                  is if this is the only feature (i.e. the 'first' and the 'last')
+    model_name    = 'linear'
+    max_depth     = the maximum depth to which this temperature feature will be used
+    min_depth     = the minimum depth to which this temperature feature will be used
+    bottom_temp   = the temperature the maximum depth
+    top_temp      = the temperature at the minimum depth
+    first_or_last = whether this feature is the first or last temperature feature. 'first' is the first feature, 'last' is the last feature, 'both'
+                    is if this is the only feature (i.e. the 'first' and the 'last')
     '''
     
-    if first_last == 'first' or first_last == 'both':
+    if first_or_last == 'first' or first_or_last == 'both':
         string = '"temperature models":['
     string += '{"model":"' + str(model_name) + '", "max depth":' + str(max_depth) + ', "min depth":' + str(min_depth) + ', "top temperature":' + \
                str(top_temp) + ', "bottom temperature":' + str(bottom_temp) + '}'
-    if first_last == 'last' or first_last == 'both':
+    if first_or_last == 'last' or first_or_last == 'both':
         string += '], \n'
     else:
         string += ',\n'
@@ -216,7 +216,7 @@ def linear_model(model_name, max_depth, min_depth, bottom_temp, top_temp, first_
 
 
 
-def uniform_model(model_name, uniform_temp, operation, first_last):
+def uniform_model(model_name, uniform_temp, operation, first_or_last):
     
     '''
     Defines the temperature within the feature as a constant value
@@ -224,11 +224,11 @@ def uniform_model(model_name, uniform_temp, operation, first_last):
     model_name   = 'uniform'
     uniform_temp = the constant temperature value
     operation    = whether uniform_temp overrides the existing temperature field, or adds or subtracts from it. 'replace', 'add', or 'subtract'
-    first_last  = whether this feature is the first or last temperature feature. 'first' is the first feature, 'last' is the last feature, 'both'
-                  is if this is the only feature (i.e. the 'first' and the 'last')
+    first_or_last = whether this feature is the first or last temperature feature. 'first' is the first feature, 'last' is the last feature, 'both'
+                    is if this is the only feature (i.e. the 'first' and the 'last')
     '''
     
-    if first_last == 'first' or first_last == 'both':
+    if first_or_last == 'first' or first_or_last == 'both':
             string = '"temperature models":['
     else:
         string = ''
@@ -236,7 +236,7 @@ def uniform_model(model_name, uniform_temp, operation, first_last):
     if model_name == 'uniform':
         string += '{"model":"' + str(model_name) + '", "temperature":' + str(uniform_temp) + ', "operation":"' + str(operation) + '"}'   
         
-    if first_last == 'last' or first_last == 'both':
+    if first_or_last == 'last' or first_or_last == 'both':
         string += '], \n'
         
     else:
@@ -246,7 +246,7 @@ def uniform_model(model_name, uniform_temp, operation, first_last):
    
    
     
-def mass_conserving_model(density, plate_vel, coupling_depth, ridge_coords, taper, max_slab_top, min_slab_top, first_last):
+def mass_conserving_model(density, plate_vel, coupling_depth, ridge_coords, taper, max_slab_top, min_slab_top, first_or_last):
     
     '''
     Defines the temperature in a subducting slab based on a half space cooling model (bottom portion of the slab) and a 
@@ -258,11 +258,11 @@ def mass_conserving_model(density, plate_vel, coupling_depth, ridge_coords, tape
     ridge_coords   = the coordinates specifying the axis of the spreading ridge
     max_slab_top   = the distance to the top of the slab from the mid plane of the slab
     min_slab_top   = the distance to the bottom of the slab from the mid plane of the slab
-    first_last     = whether this feature is the first or last temperature feature. 'first' is the first feature, 'last' is the last feature, 'both'
+    first_or_last  = whether this feature is the first or last temperature feature. 'first' is the first feature, 'last' is the last feature, 'both'
                      is if this is the only feature (i.e. the 'first' and the 'last')
     '''
     
-    if first_last == 'first' or first_last == 'both':
+    if first_or_last == 'first' or first_or_last == 'both':
         string = '"temperature models":['
     else:
         string = ''
@@ -271,7 +271,7 @@ def mass_conserving_model(density, plate_vel, coupling_depth, ridge_coords, tape
               ', "ridge coordinates":' + str(ridge_coords) + ', "taper distance":' + str(taper) + \
               ', "max distance slab top":' + str(max_slab_top) + ', "min distance slab top":' + str(min_slab_top) + '}'
     
-    if first_last == 'last' or first_last == 'both':
+    if first_or_last == 'last' or first_or_last == 'both':
         string += '], \n'
     else:
         string += ', \n'
@@ -285,7 +285,7 @@ def mass_conserving_model(density, plate_vel, coupling_depth, ridge_coords, tape
 
 
 
-def composition_feature_string(model_name, comp_index, max_depth, min_depth, is_subducting, first_last):
+def composition_feature_string(model_name, comp_index, max_depth, min_depth, is_subducting, first_or_last):
     
     '''
     Writes the string for a composition feature to the world builder file
@@ -295,10 +295,10 @@ def composition_feature_string(model_name, comp_index, max_depth, min_depth, is_
     max_depth     = maximum depth extent of the compositional field
     min_depth     = minimum depth extent of the compositional field
     is_subducting = True or False, whether the current field is a subducting slab
-    first_last    = whether this feature is the first or last temperature feature. 'first' is the first feature, 'last' is the last feature, 'both'
+    first_or_last = whether this feature is the first or last temperature feature. 'first' is the first feature, 'last' is the last feature, 'both'
                     is if this is the only feature (i.e. the 'first' and the 'last')
     '''
-    if first_last == 'first' or first_last == 'both':
+    if first_or_last == 'first' or first_or_last == 'both':
         string = '"composition models":['
     else:
         string = ''
@@ -309,7 +309,7 @@ def composition_feature_string(model_name, comp_index, max_depth, min_depth, is_
     else:
         string += '{"model":"' + str(model_name) + '", "compositions":[' + str(comp_index) + '], "max distance slab top":' + str(max_depth) + \
                   ', "min distance slab top":' + str(min_depth) + '}'
-    if first_last == 'last' or first_last == 'both':
+    if first_or_last == 'last' or first_or_last == 'both':
         string += ']\n'
     else:
         string += ',\n'

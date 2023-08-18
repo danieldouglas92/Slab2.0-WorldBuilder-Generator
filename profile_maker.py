@@ -20,6 +20,7 @@ def profile_generator(slab_depth_grid, slab_depth_contour, output_dir, depth_of_
 
     slab_depth_grid    = the slab2.0 file containing lon, lat, and depth to slab surface
     slab_depth_contour = the slab2.0 file containing lon, lat, and depth contours of the slab surface
+                         alternatively, this is the contour defining the trench.
     depth_of_contour   = the depth, in km, of the contour to be used to generate the profiles. Note slab2.0 specifies depths as negative
     output_dir         = pathway to the directory where the profiles are written
     num_of_profiles    = the number of profiles to be generated along the slab
@@ -56,7 +57,7 @@ def profile_generator(slab_depth_grid, slab_depth_contour, output_dir, depth_of_
         contour_indices = np.where(slab_depth_contour_cut[:, 2] == depth_of_contour)
         contour_arr = np.flipud(slab_depth_contour_cut[contour_indices])
         
-        # Use the length of the depth_contour and the desired number of profiles to create an interval for along-strike profiles
+        # Use the length of the specified depth contour and the desired number of profiles to create an interval for along-strike profiles
         contour_points = contour_arr.shape[0]
         contour_interval = np.floor(contour_points / num_of_profiles)
     
@@ -70,7 +71,7 @@ def profile_generator(slab_depth_grid, slab_depth_contour, output_dir, depth_of_
         contour_points = contour_arr.shape[0]
         contour_interval = np.floor(contour_points / num_of_profiles)
     
-    # Slab2.0 may contain NaNs, remove them
+    # Slab2.0 data may contain NaNs, remove them
     slab_data_no_nans = []
     for j in range(len(slab_depth_grid)):
         if np.isnan(slab_depth_grid[j, 2]) == False:
@@ -95,11 +96,11 @@ def profile_locator(contour_points, contour_arr, spacing_of_profiles, max_profil
     '''
     This function generates profiles down-dip of the slab at a given point along a specified slab2.0 depth contour
     
-    contour_points: number of points that make up the depth contour arrayd
-    contour_arr: array containing lon, lat, depth of a specified depth contour
-    spacing_of_profiles: distance between points on the profiles
-    max_profile_length: the length of the profiles
-    i: profile index
+    contour_points      = number of points that make up the depth contour array
+    contour_arr         = array containing lon, lat, depth of a specified depth contour
+    spacing_of_profiles = distance between points on the profiles
+    max_profile_length  = the length of the profiles
+    i                   = index of the current profile
     '''
     from geopy.distance import geodesic
     geodesic = pyproj.Geod(ellps='WGS84')
@@ -137,6 +138,9 @@ def profile_locator(contour_points, contour_arr, spacing_of_profiles, max_profil
     for k in range(len(combine_profile)):
         if combine_profile[:, 0][k] <= 0:
             combine_profile[:, 0][k] = combine_profile[:, 0][k] + 360
+            
+    sys('rm negative_profile.xyd')
+    sys('rm positive_profile.xyd')
     return combine_profile
     
 
@@ -147,16 +151,16 @@ def depth_extractor(combine_profile, output_dir, lon_spacing, lat_spacing, slab_
     '''
     This function assigns depths to the profiles generated in the other functions from the slab 2.0 dataset.
     
-    combine_profile: Profile generated in profile_maker.py
-    output_dir: the pathway to the directory where the text files containing the profiles will be written
-    lon_spacing: specifies slab points that will be used within +/- longitude around a given profile point 
-    lat_spacing: specifies slab points that will be used within +/- latitude around a given profile point
-    slab_data: the slab2.0 depth file with nan values removed
-    region_lon: the longitudinal extent of the data you want
-    region_lat: the latitidunal extent of the data you want
-    rotation_angle: rotates the profiles by a given azimuth
-    max_distance_point: only slab points that are less than or equal to this value will be considered
-    i: the profile number
+    combine_profile    = Profile generated in profile_maker.py
+    output_dir         = the pathway to the directory where the text files containing the profiles will be written
+    lon_spacing        = specifies slab points that will be used within +/- longitude around a given profile point 
+    lat_spacing        = specifies slab points that will be used within +/- latitude around a given profile point
+    slab_data          = the slab2.0 depth file with nan values removed
+    region_lon         = the longitudinal extent of the data you want
+    region_lat         = the latitidunal extent of the data you want
+    rotation_angle     = rotates the profiles by a given azimuth
+    max_distance_point = only slab points that are less than or equal to this value will be considered
+    i                  = index of the current profile
     '''
     
     from geopy.distance import distance
@@ -267,7 +271,7 @@ def hikurangi_plateau_depth(plateau_edge_file, profile_directory, rotation_angle
 
 
 
-# This function keeps profiles from intersecting one another
+# This function keeps profiles from intersecting one another, no longer necessary
 # ################## INPUTS ##################
 # # truncate_profiles: whether or not you want to truncate profiles to prevent them from intersecting one another
 # # profile_within_slab: profile generated by other functions
