@@ -5,7 +5,7 @@
 import numpy as np
 import os
 
-def model_feature_string(model_name, feature_name, min_depth, max_depth, coordinates, is_subducting, dip_point):
+def model_feature_string(model_name, feature_name, min_depth, max_depth, coordinates, dip_point, is_subducting=False):
     
     '''
     Creates a string which is then written to a world builder file that initializes a world builder feature
@@ -24,11 +24,11 @@ def model_feature_string(model_name, feature_name, min_depth, max_depth, coordin
                          str(max_depth) + ', "coordinates":' + str(coordinates) + ',\n'
     else:
         feature_string = '"model":"' + str(model_name) + '", "name":"' + str(feature_name) + '", "min depth":' + str(min_depth) + ', "max depth":' + \
-                          str(max_depth) + ', "coordinates":' + str(coordinates) + ', "dip point":' + str(dip_point) + ',\n'
+                         str(max_depth) + ', "coordinates":' + str(coordinates) + ', "dip point":' + str(dip_point) + ',\n'
     return feature_string
 
 
-def trench_extractor(profile_directory, xshift, yshift, trench_orienation, coordinate_sys):
+def trench_extractor(profile_directory, xshift, yshift, trench_orientation, coordinate_sys):
 
     '''
     Extracts the location of the trench from the files containing slab profiles
@@ -36,7 +36,7 @@ def trench_extractor(profile_directory, xshift, yshift, trench_orienation, coord
     profile_directory  = the pathway to the directory containing the profiles across slab2.0 data
     xshift             = Shifts the x coordinate of the trench
     yshift             = Shifts the y coordinate of the trench
-    trench_orienation  = direction of the trench relative to the overriding plate
+    trench_orientation  = direction of the trench relative to the overriding plate
     coordinate_sys     = string specifying whether the coordinate system of the profiles is 'Cartesian' or 'Spherical'
     '''
     
@@ -45,44 +45,44 @@ def trench_extractor(profile_directory, xshift, yshift, trench_orienation, coord
     if coordinate_sys == 'Cartesian':
         for file in np.sort(os.listdir(profile_directory)):
             profile_file = np.loadtxt(fname=profile_directory + file)
-            if trench_orienation == 'East':
+            if trench_orientation == 'East':
                 trench_x.append( (np.max(profile_file[:, 0]) + xshift) * 1000)
                 trench_y.append( (profile_file[:, 1][np.where(profile_file[:, 0] == np.max(profile_file[:, 0]))][0] + yshift) * 1000)
                 
-            elif trench_orienation == 'West':
+            elif trench_orientation == 'West':
                 trench_x.append( (np.min(profile_file[:, 0]) + xshift) * 1000)
                 trench_y.append( (profile_file[:, 1][np.where(profile_file[:, 0] == np.min(profile_file[:, 0]))][0] + yshift) * 1000)
 
-            elif trench_orienation == 'South':
+            elif trench_orientation == 'South':
                 trench_y.append( (np.min(profile_file[:, 1]) + yshift) * 1000)
                 trench_x.append( (profile_file[:, 0][np.where(profile_file[:, 1] == np.min(profile_file[:, 1]))][0] + xshift) * 1000)
 
-            elif trench_orienation == 'North':
+            elif trench_orientation == 'North':
                 trench_y.append( np.max(profile_file[:, 1] + yshift) * 1000)
                 trench_x.append( (profile_file[:, 0][np.where(profile_file[:, 1] == np.min(profile_file[:, 1]))][0] + xshift) * 1000)
                 
     elif coordinate_sys == 'Spherical':
         for file in np.sort(os.listdir(profile_directory)):
             profile_file = np.loadtxt(fname=profile_directory + file)
-            if trench_orienation == 'East':
+            if trench_orientation == 'East':
                 trench_x.append( (np.max(profile_file[:, 0]) + xshift))
                 trench_y.append( (profile_file[:, 1][np.where(profile_file[:, 0] == np.max(profile_file[:, 0]))][0] + yshift))
                 
-            elif trench_orienation == 'West':
+            elif trench_orientation == 'West':
                 trench_x.append( (np.min(profile_file[:, 0]) + xshift))
                 trench_y.append( (profile_file[:, 1][np.where(profile_file[:, 0] == np.min(profile_file[:, 0]))][0] + yshift))
 
-            elif trench_orienation == 'South':
+            elif trench_orientation == 'South':
                 trench_y.append( (np.min(profile_file[:, 1]) + yshift))
                 trench_x.append( (profile_file[:, 0][np.where(profile_file[:, 1] == np.min(profile_file[:, 1]))][0] + xshift))
 
-            elif trench_orienation == 'North':
+            elif trench_orientation == 'North':
                 trench_y.append( np.max(profile_file[:, 1] + yshift))
-                trench_x.append( (profile_file[:, 0][np.where(profile_file[:, 1] == np.min(profile_file[:, 1]))][0] + xshift))
+                trench_x.append( (profile_file[:, 0][np.where(profile_file[:, 1] == np.min(profile_file[:, 1]))][0] + xshift)) 
         
     return trench_x, trench_y
 
-def trench_splitter(trench_x, trench_y, x_bounds, y_bounds, trench_orienation):
+def trench_splitter(trench_x, trench_y, x_bounds, y_bounds, trench_orientation):
 
     '''
     Takes the boundaries of the model and creates an array of points which splits the surface into two areas:
@@ -95,12 +95,12 @@ def trench_splitter(trench_x, trench_y, x_bounds, y_bounds, trench_orienation):
     trench_y          = array containing y-points of the trench output by trench_extractor function
     x_bounds          = array with the max and min x-values of the model domain
     y_bounds          = array with the max and min y-values of the model domain
-    trench_orienation = string specifying the direction of the trench relative to the overriding plate 
+    trench_orientation = string specifying the direction of the trench relative to the overriding plate 
                        (required for extending the 'trench' to the boundaries of the model. For example,
                        an East-West Striking trench will be extended East-West to the Model boundaries)
     '''
     
-    if trench_orienation == 'East':
+    if trench_orientation == 'East':
         sub_coords = [[np.max(x_bounds), np.min(y_bounds)]]
         over_coords = [[np.min(x_bounds), np.min(y_bounds)]]
         sub_coords.append([trench_x[0], np.min(y_bounds)])
@@ -111,9 +111,9 @@ def trench_splitter(trench_x, trench_y, x_bounds, y_bounds, trench_orienation):
         sub_coords.append([trench_x[-1], np.max(y_bounds)])
         over_coords.append([trench_x[-1], np.max(y_bounds)])
         sub_coords.append([np.max(x_bounds), np.max(y_bounds)])
-        over_coords.append([np.min(y_bounds), np.max(y_bounds)])
+        over_coords.append([np.min(x_bounds), np.max(y_bounds)])
         
-    elif trench_orienation == 'West':
+    elif trench_orientation == 'West':
         sub_coords = [[np.min(x_bounds), np.min(y_bounds)]]
         over_coords = [[np.max(x_bounds), np.min(y_bounds)]]
         sub_coords.append([trench_x[0], np.min(y_bounds)])
@@ -126,7 +126,7 @@ def trench_splitter(trench_x, trench_y, x_bounds, y_bounds, trench_orienation):
         sub_coords.append([np.min(x_bounds), np.max(y_bounds)])
         over_coords.append([np.max(x_bounds), np.max(y_bounds)])
     
-    elif trench_orienation == 'North':
+    elif trench_orientation == 'North':
         sub_coords = [[np.min(x_bounds), np.min(y_bounds)]]
         over_coords = [[np.min(x_bounds), np.max(y_bounds)]]
         sub_coords.append([np.min(x_bounds), trench_y[0]])
@@ -139,7 +139,7 @@ def trench_splitter(trench_x, trench_y, x_bounds, y_bounds, trench_orienation):
         sub_coords.append([np.max(x_bounds), np.min(y_bounds)])
         over_coords.append([np.max(x_bounds), np.max(y_bounds)])
         
-    elif trench_orienation == 'South':
+    elif trench_orientation == 'South':
         over_coords = [[np.min(x_bounds), np.max(y_bounds)]]
         sub_coords = [[np.min(x_bounds), np.min(y_bounds)]]
         over_coords.append([np.min(x_bounds), trench_y[0]])
@@ -157,7 +157,7 @@ def trench_splitter(trench_x, trench_y, x_bounds, y_bounds, trench_orienation):
 ################ Functions which write strings for various temperature features to the world builder file ################
 ##########################################################################################################################
 
-def cooling_model(model_name, max_depth, min_depth, bottom_temp, top_temp, spr_vel, ridge_coords, first_or_last):
+def cooling_model(model_name, max_depth, min_depth, bottom_temp, top_temp, spr_vel, ridge_coords, first_or_last='both'):
 
     '''
     Defines the geotherm in an oceanic plate as the half-space cooling or plate cooling model
@@ -190,7 +190,7 @@ def cooling_model(model_name, max_depth, min_depth, bottom_temp, top_temp, spr_v
 
 
 
-def linear_model(model_name, max_depth, min_depth, bottom_temp, top_temp, first_or_last):
+def linear_model(model_name, max_depth, min_depth, bottom_temp, top_temp, first_or_last='both'):
     
     '''
     Defines the temperature in a continental plate as a linear conductive geotherm
@@ -216,7 +216,7 @@ def linear_model(model_name, max_depth, min_depth, bottom_temp, top_temp, first_
 
 
 
-def uniform_model(model_name, uniform_temp, operation, first_or_last):
+def uniform_model(model_name, uniform_temp, operation, first_or_last='both'):
     
     '''
     Defines the temperature within the feature as a constant value
@@ -246,7 +246,7 @@ def uniform_model(model_name, uniform_temp, operation, first_or_last):
    
    
     
-def mass_conserving_model(density, plate_vel, coupling_depth, ridge_coords, taper, max_slab_top, min_slab_top, first_or_last):
+def mass_conserving_model(density, plate_vel, coupling_depth, ridge_coords, taper, max_slab_top, min_slab_top, first_or_last='both'):
     
     '''
     Defines the temperature in a subducting slab based on a half space cooling model (bottom portion of the slab) and a 
@@ -285,7 +285,7 @@ def mass_conserving_model(density, plate_vel, coupling_depth, ridge_coords, tape
 
 
 
-def composition_feature_string(model_name, comp_index, max_depth, min_depth, is_subducting, first_or_last):
+def composition_feature_string(model_name, comp_index, max_depth, min_depth, is_subducting=False, first_or_last='both', operation='replace'):
     
     '''
     Writes the string for a composition feature to the world builder file
@@ -305,10 +305,10 @@ def composition_feature_string(model_name, comp_index, max_depth, min_depth, is_
     
     if is_subducting == False:
         string += '{"model":"' + str(model_name) + '", "compositions":[' + str(comp_index) + '], "max depth":' + str(max_depth) + \
-                  ', "min depth":' + str(min_depth) + '}'
+                  ', "operation":"' + str(operation) + '", "min depth":' + str(min_depth) + '}'
     else:
-        string += '{"model":"' + str(model_name) + '", "compositions":[' + str(comp_index) + '], "max distance slab top":' + str(max_depth) + \
-                  ', "min distance slab top":' + str(min_depth) + '}'
+        string += '{"model":"' + str(model_name) + '", "compositions":[' + str(comp_index) + '], "operation":"' + str(operation) + '", ' + \
+                  '"max distance slab top":' + str(max_depth) + ', "min distance slab top":' + str(min_depth) + '}'
     if first_or_last == 'last' or first_or_last == 'both':
         string += ']\n'
     else:
@@ -321,6 +321,72 @@ def composition_feature_string(model_name, comp_index, max_depth, min_depth, is_
 
 
 
+def segment_string_at_end(length, thickness, angle, top_truncation, coordinate, total_sections, segment_num, current_segment):
+
+    '''
+    Writes the string that defines segments of a slab to the world builder file
+
+    When initializing a slab in Worldbuilder, you must specify the same number of segments for each section along strike
+    of the slab, which is troublesome since some sections of slab are much longer than others. To get around this,
+    the slab is initialized with the same number of segments as the section with the maximum number of segments. 
+    Then, sections with less than this number of segments are assigned filler sections with lengths of 0 m until
+    they reach the required number of segments
+
+    length          = the length of a given segment
+    thickness       = the thickness of a given segment
+    angle           = the dip of a given segment
+    coordinate      = the trench coordinate index coupled to the current section
+    total_sections  = the number of sections making up the slab
+    segment_num     = the number of segments making up each section
+    current_segment = the current segment index of a section
+    '''
+ 
+
+    string_total = ''
+    
+    if current_segment <= len(thickness) - 1:
+        if current_segment != (segment_num - 1):
+            string_total = '{"length":' + str(length[current_segment]) + ', "thickness":' + str(thickness[current_segment]) + \
+                            ', "angle":' + str(angle[current_segment]) + ', "top truncation":' + str(top_truncation) + '},\n'
+            return string_total
+
+        elif current_segment == (segment_num - 1) and coordinate == total_sections:
+            string_total += '{"length":' + str(length[current_segment]) + ', "thickness":' + str(thickness[current_segment]) + \
+                             ', "angle":' + str(angle[current_segment]) + ', "top truncation":' + str(top_truncation) + '}]}\n'
+            return string_total
+
+        else:
+            string_total += '{"length":' + str(length[current_segment]) + ', "thickness":' + str(thickness[current_segment]) + \
+                             ', "angle":' + str(angle[current_segment]) + ', "top truncation":' + str(top_truncation) + '}]},\n'
+            return string_total
+        
+    if current_segment > len(thickness) - 1:
+        if len(thickness[0]) > 1:
+            if current_segment != (segment_num - 1):
+                string_total += '{"length":' + str(0.0) + ', "thickness":' + str([np.max(thickness), np.max(thickness)]) + ', "angle":' + str(angle[len(thickness) - 1]) + '},\n'# \
+                return string_total
+            
+            elif current_segment == (segment_num - 1) and coordinate == total_sections:
+                string_total += '{"length":' + str(0.0) + ', "thickness":' + str([np.max(thickness), np.max(thickness)]) + ', "angle":' + str(angle[len(thickness) - 1]) + '}]}\n'
+                return string_total
+                
+            else:
+                string_total += '{"length":' + str(0.0) + ', "thickness":' + str([np.max(thickness), np.max(thickness)]) + ', "angle":' + str(angle[len(thickness) - 1]) + '}]},\n'
+                return string_total
+        
+        else:
+            if current_segment != (segment_num - 1):
+                string_total += '{"length":' + str(0.0) + ', "thickness":' + str([np.max(thickness)]) + ', "angle":' + str(angle[len(thickness) - 1]) + '},\n'
+                return string_total
+            
+            elif current_segment == (segment_num - 1) and coordinate == total_sections:
+                string_total += '{"length":' + str(0.0) + ', "thickness":' + str([np.max(thickness)]) + ', "angle":' + str(angle[len(thickness) - 1]) + '}]}'
+                return string_total
+            
+            else:
+                string_total += '{"length":' + str(0.0) + ', "thickness":' + str([np.max(thickness)]) + ', "angle":' + str(angle[len(thickness) - 1]) + '}]},\n'
+                return string_total
+            
 def segment_string(length, thickness, angle, top_truncation, coordinate, total_sections, segment_num, current_segment):
 
     '''
@@ -346,13 +412,13 @@ def segment_string(length, thickness, angle, top_truncation, coordinate, total_s
     if current_segment < filler_segment_number:
         if len(thickness[0]) > 1:
             # Here we proceed as above, adding the segment strings until we reach the end of the array
-            string_total += '{"length":' + str(0.0) + ', "thickness":' + str([np.max(thickness), np.max(thickness)]) + ', "angle":' + str([0.0, 0.0]) + '},\n'# \
+            string_total += '{"length":' + str(0.0) + ', "thickness":' + str([np.min(thickness), np.min(thickness)]) + ', "angle":' + str([0.0, 0.0]) + '},\n'# \
                            # ', "angle":' + str([0,0]) + '},\n'
             return string_total
         
         else:
             # Here we proceed as above, adding the segment strings until we reach the end of the array
-            string_total += '{"length":' + str(0.0) + ', "thickness":' + str([np.max(thickness)]) + ', "angle":' + str([0.0, 0.0]) + '},\n'# \
+            string_total += '{"length":' + str(0.0) + ', "thickness":' + str([np.min(thickness)]) + ', "angle":' + str([0.0, 0.0]) + '},\n'# \
                            # ', "angle":' + str([0,0]) + '},\n'
             return string_total
         
@@ -373,10 +439,8 @@ def segment_string(length, thickness, angle, top_truncation, coordinate, total_s
             string_total += '{"length":' + str(length[current_segment - filler_segment_number]) + ', "thickness":' + str(thickness[current_segment - filler_segment_number]) + \
                         ', "angle":' + str(angle[current_segment - filler_segment_number]) + ', "top truncation":' + str(top_truncation) + '}]},\n'
             return string_total
-            
 
-
-def segment_section(world_builder_file, profile_directory, xshift, yshift, slab_thickness, top_truncation, coordinate_system):
+def segment_section(world_builder_file, profile_directory, xshift, yshift, slab_thickness, top_truncation, coordinate_system, fill_segments):
     
     '''
     Calculates dip, thickness, and length of segments then uses segment_string() to create the string for the world builder file.
@@ -410,7 +474,7 @@ def segment_section(world_builder_file, profile_directory, xshift, yshift, slab_
     length = []
     for file in np.sort(os.listdir(profile_directory)):
         length.append(len(np.loadtxt(fname=profile_directory + file)))
-    segment_num = max(length)
+    segment_num = max(length) - 1
     total_sections = len(os.listdir(profile_directory)) - 1
     
     # This loop initializes the slab with the correct number of segments
@@ -423,9 +487,7 @@ def segment_section(world_builder_file, profile_directory, xshift, yshift, slab_
 
     # This loops through all sections and determines the thickness, dip, and length of each segment
     world_builder_file.write('    "sections":[')
-    index = 0
-    for file in np.sort(os.listdir(profile_directory)):
-        index += 1
+    for section_index, file in enumerate(np.sort(os.listdir(profile_directory))):
         filename = os.path.join(profile_directory, file)
 
         track_x = np.loadtxt(fname=filename, usecols=0) + xshift
@@ -439,20 +501,20 @@ def segment_section(world_builder_file, profile_directory, xshift, yshift, slab_
         # Here we check to see if the thickness is set to vary along the slab by checking if slab_thickness is
         # a scalar or not. Dip is also computed and stored for output to the world builder file here
         if hasattr(slab_thickness, "__len__"):
-            thick_holder = [slab_thickness[index - 1][:, 0][0]]
+            thick_holder = []
             for i in range(1, len(track_z)):
-                thick_index = np.min(np.where( slab_thickness[index - 1][:, 1] > np.abs(track_z[i]) ))
-                thick_holder.append(slab_thickness[index - 1][:, 0][thick_index])
+                thick_index = np.min(np.where( slab_thickness[section_index][:, 1] > np.abs(track_z[i]) ))
+                thick_holder.append(slab_thickness[section_index][:, 0][thick_index])
                 
                 if coordinate_system == 'Cartesian':
-                    slab_cart_proj = np.sqrt( (track_x[i] - track_x[i - 1])**2 + (track_y[i] - track_y[i - 1])**2 )
-                    slab_length = np.sqrt( (track_x[i] - track_x[i - 1])**2 + (track_y[i] - track_y[i - 1])**2 + (track_z[i] - track_z[i - 1])**2)
+                    slab_cart_proj = np.sqrt((track_x[i] - track_x[i - 1])**2 + (track_y[i] - track_y[i - 1])**2 )
+                    slab_length = np.sqrt((track_x[i] - track_x[i - 1])**2 + (track_y[i] - track_y[i - 1])**2 + (track_z[i] - track_z[i - 1])**2)
                     riserun = (track_z[i - 1] - track_z[i]) / (slab_cart_proj)
                     
                 elif coordinate_system == 'Spherical':
                     fwd_az, back_az, slab_cart_proj_m = geodesic.inv(track_x[i-1], track_y[i-1], track_x[i], track_y[i])
                     slab_cart_proj = slab_cart_proj_m / 1e3
-                    slab_length = np.sqrt( slab_cart_proj**2 + (track_z[i] - track_z[i - 1])**2)
+                    slab_length = np.sqrt(slab_cart_proj**2 + (track_z[i] - track_z[i - 1])**2)
                     riserun = (track_z[i - 1] - track_z[i]) / (slab_cart_proj)
                     
                 segment_length.append(slab_length * 1000)
@@ -472,12 +534,12 @@ def segment_section(world_builder_file, profile_directory, xshift, yshift, slab_
                 
                 if coordinate_system == 'Cartesian':
                     slab_cart_proj = np.sqrt( (track_x[i] - track_x[i - 1])**2 + (track_y[i] - track_y[i - 1])**2 )
-                    slab_length = np.sqrt( (track_x[i] - track_x[i - 1])**2 + (track_y[i] - track_y[i - 1])**2 + (track_z[i] - track_z[i - 1])**2)
+                    slab_length = np.sqrt( (track_x[i] - track_x[i - 1])**2 + (track_y[i] - track_y[i - 1])**2 + (track_z[i] - track_z[i - 1])**2 )
                     
                 elif coordinate_system == 'Spherical':
                     fwd_az, back_az, slab_cart_proj_m = geodesic.inv(track_x[i-1], track_y[i-1], track_x[i], track_y[i])
                     slab_cart_proj = slab_cart_proj_m / 1e3
-                    slab_length = np.sqrt( slab_cart_proj**2 + (track_z[i] - track_z[i - 1])**2)
+                    slab_length = np.sqrt( slab_cart_proj**2 + (track_z[i] - track_z[i - 1])**2 )
                     
                 riserun = (track_z[i - 1] - track_z[i]) / (slab_cart_proj)
                 segment_length.append(slab_length * 1000)
@@ -491,7 +553,10 @@ def segment_section(world_builder_file, profile_directory, xshift, yshift, slab_
                 dips.append([dip_holder[k]])
         
         # Write to the World Builder File
-        world_builder_file.write('    {"coordinate":' + str(index - 1) + ',\n')
+        world_builder_file.write('    {"coordinate":' + str(section_index) + ',\n')
         world_builder_file.write('     "segments":[')
         for current_segment in range(segment_num):
-            world_builder_file.write('    ' + segment_string(segment_length, segment_thickness, dips, top_truncation, index - 1, total_sections, segment_num, current_segment))
+            if fill_segments == 'end':
+                world_builder_file.write('    ' + segment_string_at_end(segment_length, segment_thickness, dips, top_truncation, section_index, total_sections, segment_num, current_segment))
+            elif fill_segments == 'start':
+                world_builder_file.write('    ' + segment_string(segment_length, segment_thickness, dips, top_truncation, section_index, total_sections, segment_num, current_segment))

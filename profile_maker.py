@@ -245,6 +245,8 @@ def hikurangi_plateau_depth(plateau_edge_file, profile_directory, rotation_angle
     '''
     
     index = 0
+    
+    sys('rm -rf ' + output_dir)
     sys('mkdir ' + output_dir)
     sys('mkdir ' + output_dir + '/geographic')
     sys('mkdir ' + output_dir + '/cartesian')
@@ -252,11 +254,11 @@ def hikurangi_plateau_depth(plateau_edge_file, profile_directory, rotation_angle
         index += 1
         file_path = os.path.join(profile_directory, file)
         plateau_edge = np.loadtxt(plateau_edge_file)
-        
+
         sys('gmt select ' + file_path + ' -F' + plateau_edge_file + ' -If -Ef > ' + output_dir + '/plateau_location_along_profile.xyd')
         intersected = np.loadtxt(fname=output_dir + '/plateau_location_along_profile.xyd')
         np.savetxt(fname=output_dir + '/geographic/profile_' + str(index).zfill(5) + '.xyd', X=intersected)
-        
+
         if create_plots == True:
             import matplotlib.pyplot as plt
             track = np.loadtxt(fname=file_path)
